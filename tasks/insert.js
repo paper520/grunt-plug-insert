@@ -8,11 +8,16 @@
 
 'use strict';
 
+const fs = require("fs");
+
 module.exports = function (grunt) {
 
   grunt.registerMultiTask('insert', 'Insert merge code at the specified hook.', function () {
 
-    var options = this.options({});
+    var options = this.options({
+      banner: "",
+      link: "\n"
+    });
 
     var read = function (fileName) {
       if (!grunt.file.exists(fileName)) {
@@ -21,21 +26,23 @@ module.exports = function (grunt) {
       return grunt.file.read(fileName);
     },
       // 寻找插入点
-      code = read(options.target).split(new RegExp(options.separator));
+      code = read(options.target).split(new RegExp(options.separator)),
+      // 抬头
+      banner = grunt.template.process(options.banner);
 
     this.files.forEach(function (file) {
 
-      var src = code[0];
+      // 写入磁盘
+      grunt.file.write(file.dest, banner + options.link);
 
-      var i;
-      for (i in file.orig.src) {
-        src += "\n" + read(file.orig.src[i]) + "\n";
+      fs.appendFileSync(file.dest, code[0]);
+
+      for (let i in file.orig.src) {
+        let src_code = options.link + read(file.orig.src[i]) + options.link;
+        fs.appendFileSync(file.dest, src_code);
       }
 
-      src += code[1];
-
-      // 写入磁盘
-      grunt.file.write(file.dest, src);
+      fs.appendFileSync(file.dest, code[1]);
 
       // 提示成功
       grunt.log.writeln('File "' + file.dest + '" created.');

@@ -18,6 +18,8 @@ grunt.loadNpmTasks('grunt-plug-insert');
 grunt.initConfig({
   insert: {
     options: {
+      banner: "",
+      link: "\n",
       // Place of segmentation
       separator: '@CODE inserts compiled test here',
       // Insert the target file
